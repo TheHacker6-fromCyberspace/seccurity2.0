@@ -1806,14 +1806,18 @@ function renderEntries() {
   const tbody = document.getElementById('entriesBody');
   if (!tbody) return;
   let entries = loadEntries();
-  // Sort by date (newest first)
-  entries.sort(function(a, b) { return parseSpanishDate(b.time) - parseSpanishDate(a.time); });
   if (entries.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--security-text-soft);">' + t('No hay registros') + '</td></tr>';
     return;
   }
-  tbody.innerHTML = entries.map(function(entry, index) {
-    return '<tr><td>' + escapeHtml(entry.name) + '</td><td>' + escapeHtml(entry.type) + '</td><td>' + escapeHtml(entry.action) + '</td><td>' + escapeHtml(entry.time) + '</td><td><button class="action-btn delete" onclick="deleteEntry(' + index + ')"><i class="fas fa-trash"></i> ' + t('Eliminar') + '</button></td></tr>';
+  // Create array with original indices for sorting
+  let entriesWithIndex = entries.map(function(entry, index) {
+    return { entry: entry, originalIndex: index };
+  });
+  // Sort by date (newest first)
+  entriesWithIndex.sort(function(a, b) { return parseSpanishDate(b.entry.time) - parseSpanishDate(a.entry.time); });
+  tbody.innerHTML = entriesWithIndex.map(function(item) {
+    return '<tr><td>' + escapeHtml(item.entry.name) + '</td><td>' + escapeHtml(item.entry.type) + '</td><td>' + escapeHtml(item.entry.action) + '</td><td>' + escapeHtml(item.entry.time) + '</td><td><button class="action-btn view" onclick="viewEntry(' + item.originalIndex + ')"><i class="fas fa-eye"></i></button> <button class="action-btn delete" onclick="deleteEntry(' + item.originalIndex + ')"><i class="fas fa-trash"></i> ' + t('Eliminar') + '</button></td></tr>';
   }).join('');
 }
 
@@ -1821,19 +1825,23 @@ function renderProblems() {
   const tbody = document.getElementById('problemsBody');
   if (!tbody) return;
   let problems = loadProblems();
-  // Sort by date (newest first)
-  problems.sort(function(a, b) { return parseSpanishDate(b.date) - parseSpanishDate(a.date); });
   if (problems.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--security-text-soft);">' + t('No hay problemas reportados') + '</td></tr>';
     return;
   }
-  tbody.innerHTML = problems.map(function(problem, index) {
-    var photoCell = problem.photo ? '<img src="' + escapeHtml(problem.photo) + '" class="problem-thumb" onclick="openPhoto(' + index + ')" alt="' + t('Foto') + '">' : '<button class="action-btn view" onclick="viewProblem(' + index + ')"><i class="fas fa-eye"></i></button>';
-    var resolveBtn = !problem.resolved ? '<button class="action-btn solve" onclick="resolveProblem(' + index + ')"><i class="fas fa-check"></i> ' + t('Resolver') + '</button> ' : '';
-    var statusBadge = problem.resolved
+  // Create array with original indices for sorting
+  let problemsWithIndex = problems.map(function(problem, index) {
+    return { problem: problem, originalIndex: index };
+  });
+  // Sort by date (newest first)
+  problemsWithIndex.sort(function(a, b) { return parseSpanishDate(b.problem.date) - parseSpanishDate(a.problem.date); });
+  tbody.innerHTML = problemsWithIndex.map(function(item) {
+    var photoCell = item.problem.photo ? '<img src="' + escapeHtml(item.problem.photo) + '" class="problem-thumb" onclick="openPhoto(' + item.originalIndex + ')" alt="' + t('Foto') + '">' : '<button class="action-btn view" onclick="viewProblem(' + item.originalIndex + ')"><i class="fas fa-eye"></i></button>';
+    var resolveBtn = !item.problem.resolved ? '<button class="action-btn solve" onclick="resolveProblem(' + item.originalIndex + ')"><i class="fas fa-check"></i> ' + t('Resolver') + '</button> ' : '';
+    var statusBadge = item.problem.resolved
       ? '<span class="status-badge solved"><i class="fas fa-check"></i> ' + t('Resuelto') + '</span>'
       : '<span class="status-badge pending"><i class="fas fa-clock"></i> ' + t('Pendiente') + '</span>';
-    return '<tr><td>' + escapeHtml(problem.type) + '</td><td>' + escapeHtml(problem.location) + '</td><td>' + escapeHtml(problem.description) + '</td><td>' + escapeHtml(problem.reporter || t('Anónimo')) + '</td><td>' + escapeHtml(problem.date) + '</td><td>' + statusBadge + '</td><td>' + photoCell + '</td><td>' + resolveBtn + '<button class="action-btn delete" onclick="deleteProblem(' + index + ')"><i class="fas fa-trash"></i> ' + t('Eliminar') + '</button></td></tr>';
+    return '<tr><td>' + escapeHtml(item.problem.type) + '</td><td>' + escapeHtml(item.problem.location) + '</td><td>' + escapeHtml(item.problem.description) + '</td><td>' + escapeHtml(item.problem.reporter || t('Anónimo')) + '</td><td>' + escapeHtml(item.problem.date) + '</td><td>' + statusBadge + '</td><td>' + photoCell + '</td><td>' + resolveBtn + '<button class="action-btn delete" onclick="deleteProblem(' + item.originalIndex + ')"><i class="fas fa-trash"></i> ' + t('Eliminar') + '</button></td></tr>';
   }).join('');
 }
 
