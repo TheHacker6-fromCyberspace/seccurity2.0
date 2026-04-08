@@ -98,6 +98,18 @@ header {
     color: var(--primary-color);
 }
 
+.logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    gap: 10px;
+}
+
+.logo a:hover {
+    opacity: 0.85;
+}
+
 .logo-image {
     height: 80px;
     width: auto;
